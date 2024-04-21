@@ -1,7 +1,6 @@
 package com.esosaphilip.mobilecompass.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,20 +16,17 @@ import com.esosaphilip.mobilecompass.ui.theme.MobileCompassTheme
 @Composable
 fun CompassUi(rotateTo: Float) {
 
-
-        Box(
-          modifier = Modifier.fillMaxSize(),
-              contentAlignment = Alignment.Center
-        ){
             Column(
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
                 CompassImage(rotateTo)
-                Spacer(modifier = Modifier.padding(15.dp))
+                Spacer(modifier = Modifier.padding(20.dp))
                 DegreeCount(degree = rotateTo)
+
             }
-        }
+
 }
 
 
@@ -39,6 +35,6 @@ fun CompassUi(rotateTo: Float) {
 @Composable
 fun CompassPreview(){
     MobileCompassTheme {
-        CompassUi(70f)
+        CompassUi(120f)
     }
 }

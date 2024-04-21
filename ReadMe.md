@@ -31,7 +31,7 @@ To utilize the Rotation Vector Sensor in your Android application, you need to f
 
 ## Screenshots
 
-![App Screenshot](path/to/app_screenshot.png)
+![App Screenshot](Screenshot_Compass.png)
 
 ## Demo Video
 

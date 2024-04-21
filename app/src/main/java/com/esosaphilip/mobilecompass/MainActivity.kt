@@ -12,23 +12,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.esosaphilip.mobilecompass.screen.CompassUi
 import com.esosaphilip.mobilecompass.ui.theme.MobileCompassTheme
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity(), SensorEventListener {
       private var sensorManager: SensorManager? = null
       private var rotationSensor: Sensor? = null
 
     // to keep track of the rotation of the Compass
-    private var currentDegree = 0f
 
+    private var previousDegree = 0f // Previous degree value
+    private var currentDegreeState = mutableFloatStateOf(0f)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val rotationSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+         rotationSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
         setContent {
             MobileCompassTheme {
@@ -38,7 +42,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     color = MaterialTheme.colorScheme.background
                 ) {
 
-                  CompassUi(rotateTo = currentDegree)
+                  CompassUi(rotateTo = currentDegreeState.floatValue)
 
                 }
             }
@@ -46,13 +50,21 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-       // most important function
-       val degree = Math.round(event!!.values[0])
+        val rotationMatrix = FloatArray(9)
+        SensorManager.getRotationMatrixFromVector(rotationMatrix, event!!.values)
 
+        val orientationValues = FloatArray(3)
+        SensorManager.getOrientation(rotationMatrix, orientationValues)
 
+        val degree = Math.toDegrees(orientationValues[0].toDouble()).toFloat()
+        val roundedDegree = degree.roundToInt().toFloat() // Round off to the nearest integer
+        currentDegreeState.floatValue = roundedDegree // Update the degree state
 
-        currentDegree = (-degree).toFloat()
-
+        // Stop updating if the device is stationary (change in degree is below a threshold)
+        if (abs(roundedDegree - previousDegree) < 1.0) {
+            sensorManager?.unregisterListener(this)
+        }
+        previousDegree = roundedDegree
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
