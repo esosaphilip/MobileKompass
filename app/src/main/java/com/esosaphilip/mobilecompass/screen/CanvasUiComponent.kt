@@ -23,7 +23,7 @@ fun CompassImage(rotate: Float) {
 
     val animatedRotation by animateFloatAsState(
         targetValue = rotate,
-        animationSpec = tween(durationMillis = 500), label = "" // Adjust the duration as needed
+        animationSpec = tween(durationMillis = 210), label = "" // Adjust the duration as needed
     )
 
 

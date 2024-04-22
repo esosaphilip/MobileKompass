@@ -1,11 +1,13 @@
 package com.esosaphilip.mobilecompass
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.esosaphilip.mobilecompass.screen.CompassUi
 import com.esosaphilip.mobilecompass.ui.theme.MobileCompassTheme
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity(), SensorEventListener {
@@ -50,21 +51,20 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        val rotationMatrix = FloatArray(9)
-        SensorManager.getRotationMatrixFromVector(rotationMatrix, event!!.values)
 
-        val orientationValues = FloatArray(3)
-        SensorManager.getOrientation(rotationMatrix, orientationValues)
+        val degree = event?.values?.get(0)?.let { Math.toDegrees(it.toDouble()).toFloat() }
 
-        val degree = Math.toDegrees(orientationValues[0].toDouble()).toFloat()
-        val roundedDegree = degree.roundToInt().toFloat() // Round off to the nearest integer
-        currentDegreeState.floatValue = roundedDegree // Update the degree state
+        Log.d(TAG, "onSensorChanged: $degree")
 
-        // Stop updating if the device is stationary (change in degree is below a threshold)
-        if (abs(roundedDegree - previousDegree) < 1.0) {
-            sensorManager?.unregisterListener(this)
+        val roundedDegree = degree?.roundToInt()?.toFloat() // Round off to the nearest integer
+        if (roundedDegree != null) {
+            currentDegreeState.floatValue = roundedDegree
+        } // Update the degree state
+
+
+        if (roundedDegree != null) {
+            previousDegree = roundedDegree
         }
-        previousDegree = roundedDegree
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -75,7 +75,10 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
 
-        sensorManager?.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager?.registerListener(
+            this, rotationSensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
 
     }
 
